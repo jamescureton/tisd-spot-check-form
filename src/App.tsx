@@ -506,7 +506,7 @@ const payload = {
             fontWeight: "bold",
           }}
         >
-          Tyler ISD Core Spot Observation Form
+          2026-27 Tyler ISD Core Spot Observation Form
         </div>
 
         <div style={{ padding: 20 }}>
@@ -634,14 +634,21 @@ const payload = {
             }}
           >
             <tbody>
-              <tr style={{ background: "#e8eef5" }}>
-                <td style={{ padding: 8, fontWeight: "bold" }}>Indicator</td>
-                <td style={{ textAlign: "center", fontWeight: "bold" }}>U</td>
-                <td style={{ textAlign: "center", fontWeight: "bold" }}>P</td>
-                <td style={{ textAlign: "center", fontWeight: "bold" }}>M</td>
-              </tr>
+            <tr style={{ background: "#e8eef5" }}>
+  <td style={{ padding: 8, fontWeight: "bold" }}>
+    Click the number of points earned (U = Unsatisfactory, P = Partially Effective, and M = Mostly Effective)
+  </td>
+  <td style={{ textAlign: "center", fontWeight: "bold" }}></td>
+  <td style={{ textAlign: "center", fontWeight: "bold" }}></td>
+  <td style={{ textAlign: "center", fontWeight: "bold" }}></td>
+</tr>
 
-              <tr><td colSpan={4} style={{ background: NAVY, color: WHITE, padding: 8, fontWeight: "bold" }}>PLANNING</td></tr>
+<tr style={{ background: NAVY, color: WHITE }}>
+  <td style={{ padding: 8, fontWeight: "bold" }}>PLANNING</td>
+  <td style={{ textAlign: "center", fontWeight: "bold", padding: 8 }}>U</td>
+  <td style={{ textAlign: "center", fontWeight: "bold", padding: 8 }}>P</td>
+  <td style={{ textAlign: "center", fontWeight: "bold", padding: 8 }}>M</td>
+</tr>
               {PLANNING.map((item) => (
                 <ScoreRow
                   key={item.id}
@@ -652,7 +659,12 @@ const payload = {
                 />
               ))}
 
-              <tr><td colSpan={4} style={{ background: NAVY, color: WHITE, padding: 8, fontWeight: "bold" }}>INSTRUCTION</td></tr>
+<tr style={{ background: NAVY, color: WHITE }}>
+  <td style={{ padding: 8, fontWeight: "bold" }}>INSTRUCTION</td>
+  <td style={{ textAlign: "center", fontWeight: "bold", padding: 8 }}>U</td>
+  <td style={{ textAlign: "center", fontWeight: "bold", padding: 8 }}>P</td>
+  <td style={{ textAlign: "center", fontWeight: "bold", padding: 8 }}>M</td>
+</tr>
               {INSTRUCTION.map((item) => (
                 <ScoreRow
                   key={item.id}
@@ -663,7 +675,12 @@ const payload = {
                 />
               ))}
 
-              <tr><td colSpan={4} style={{ background: NAVY, color: WHITE, padding: 8, fontWeight: "bold" }}>CLASSROOM CULTURE</td></tr>
+<tr style={{ background: NAVY, color: WHITE }}>
+  <td style={{ padding: 8, fontWeight: "bold" }}>CLASSROOM CULTURE</td>
+  <td style={{ textAlign: "center", fontWeight: "bold", padding: 8 }}>U</td>
+  <td style={{ textAlign: "center", fontWeight: "bold", padding: 8 }}>P</td>
+  <td style={{ textAlign: "center", fontWeight: "bold", padding: 8 }}>M</td>
+</tr>
               {CULTURE.map((item) => (
                 <ScoreRow
                   key={item.id}
@@ -676,16 +693,49 @@ const payload = {
             </tbody>
           </table>
 
-          <div style={{ marginBottom: 16 }}>
-  <div style={{ marginBottom: 8, fontWeight: "bold" }}>
-    Total Points: {totalPoints.toFixed(1)}
+          <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "1fr 36px 36px 36px",
+    justifyContent: "end",
+    rowGap: 8,
+    marginBottom: 20,
+    width: "100%",
+  }}
+>
+  <div style={{ textAlign: "right", fontWeight: "bold", paddingRight: 8 }}>
+    Total Points:
   </div>
-  <div style={{ marginBottom: 8, fontWeight: "bold" }}>
-    Proficiency: {proficiency.label}
+  <div></div>
+  <div></div>
+  <div style={{ textAlign: "center", fontWeight: "bold" }}>
+    {totalPoints.toFixed(1)}
   </div>
-</div>
 
-<div
+  <div style={{ textAlign: "right", fontWeight: "bold", paddingRight: 8 }}>
+    Proficiency Projection:
+  </div>
+  <div></div>
+  <div></div>
+  <div style={{ textAlign: "center", fontWeight: "bold", color: proficiency.color }}>
+    {proficiency.label}
+  </div>
+</div>  
+
+          <div style={{ marginBottom: 12 }}>
+            <label style={{ display: "block", marginBottom: 4 }}>Praise</label>
+            <textarea value={praise} onChange={(e) => setPraise(e.target.value)} rows={2} style={{ width: "100%" }} />
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <label style={{ display: "block", marginBottom: 4 }}>Polish</label>
+            <textarea value={polish} onChange={(e) => setPolish(e.target.value)} rows={2} style={{ width: "100%" }} />
+          </div>
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: "block", marginBottom: 4 }}>Question</label>
+            <textarea value={question} onChange={(e) => setQuestion(e.target.value)} rows={2} style={{ width: "100%" }} />
+          </div>
+
+          <div
   style={{
     marginBottom: 20,
     border: "1px solid #444",
@@ -785,19 +835,6 @@ const payload = {
 >
   Note: Spot scores are NOT rounded
 </div>
-
-          <div style={{ marginBottom: 12 }}>
-            <label style={{ display: "block", marginBottom: 4 }}>Praise</label>
-            <textarea value={praise} onChange={(e) => setPraise(e.target.value)} rows={2} style={{ width: "100%" }} />
-          </div>
-          <div style={{ marginBottom: 12 }}>
-            <label style={{ display: "block", marginBottom: 4 }}>Polish</label>
-            <textarea value={polish} onChange={(e) => setPolish(e.target.value)} rows={2} style={{ width: "100%" }} />
-          </div>
-          <div style={{ marginBottom: 20 }}>
-            <label style={{ display: "block", marginBottom: 4 }}>Question</label>
-            <textarea value={question} onChange={(e) => setQuestion(e.target.value)} rows={2} style={{ width: "100%" }} />
-          </div>
 
           {attempted && Object.keys(errors).length > 0 && (
             <div
