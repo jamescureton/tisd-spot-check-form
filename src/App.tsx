@@ -17,6 +17,42 @@ const GOLD = "#C9982A";
 const TEAL = "#2A7F8F";
 const WHITE = "#FFFFFF";
 
+const CAMPUS_OPTIONS = [
+  "Select campus...",
+  "Austin",
+  "Clarkston",
+  "Dixie",
+  "Douglas",
+  "Griffin",
+  "Jones",
+  "Orr",
+  "Peete",
+  "Ramey",
+  "Boulter"
+];
+
+const GRADE_OPTIONS = [
+  "Select grade...",
+  "PK",
+  "K",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8"
+];
+
+const CONTENT_OPTIONS = [
+  "Select content...",
+  "Reading",
+  "Math",
+  "Science",
+  "Social Studies",
+];
+
 type FieldKey =
   | "teacher"
   | "campus"
@@ -434,6 +470,14 @@ const payload = {
     };
   }
 
+  function selectStyle(key: string) {
+    return {
+      ...inputStyle(key),
+      height: 32,
+      background: errors[key] ? "#fff5f5" : WHITE,
+    };
+  }
+
   return (
     <div
       style={{
@@ -466,37 +510,110 @@ const payload = {
         </div>
 
         <div style={{ padding: 20 }}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 12,
-              marginBottom: 20,
-            }}
-          >
-            {[
-              ["teacher", "Teacher"],
-              ["campus", "Campus"],
-              ["grade", "Grade Level"],
-              ["observer", "Observer"],
-              ["date", "Date"],
-              ["time", "Time"],
-              ["content", "Content"],
-            ].map(([key, label]) => (
-              <div key={key}>
-                <label style={{ display: "block", marginBottom: 4, fontSize: 12 }}>
-                  {label}
-                </label>
-                <input
-                  value={fields[key as FieldKey]}
-                  onChange={(e) =>
-                    handleFieldChange(key as FieldKey, e.target.value)
-                  }
-                  style={inputStyle(key)}
-                />
-              </div>
-            ))}
-          </div>
+        <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "140px 1fr 140px 1fr",
+    gap: 10,
+    marginBottom: 20,
+    alignItems: "center",
+  }}
+>
+  {/* Row 1 */}
+  <div style={{ fontSize: 12, fontWeight: "bold" }}>Teacher</div>
+  <div>
+    <input
+      value={fields.teacher}
+      onChange={(e) => handleFieldChange("teacher", e.target.value)}
+      style={inputStyle("teacher")}
+    />
+  </div>
+  <div></div>
+  <div></div>
+
+  {/* Row 2 */}
+  <div style={{ fontSize: 12, fontWeight: "bold" }}>Campus</div>
+  <div>
+    <select
+      value={fields.campus}
+      onChange={(e) => handleFieldChange("campus", e.target.value)}
+      style={selectStyle("campus")}
+    >
+      {CAMPUS_OPTIONS.map((option) => (
+        <option
+          key={option}
+          value={option === "Select campus..." ? "" : option}
+        >
+          {option}
+        </option>
+      ))}
+    </select>
+  </div>
+  <div style={{ fontSize: 12, fontWeight: "bold" }}>Date</div>
+  <div>
+    <input
+      type="date"
+      value={fields.date}
+      onChange={(e) => handleFieldChange("date", e.target.value)}
+      style={inputStyle("date")}
+    />
+  </div>
+
+  {/* Row 3 */}
+  <div style={{ fontSize: 12, fontWeight: "bold" }}>Grade Level</div>
+  <div>
+    <select
+      value={fields.grade}
+      onChange={(e) => handleFieldChange("grade", e.target.value)}
+      style={selectStyle("grade")}
+    >
+      {GRADE_OPTIONS.map((option) => (
+        <option
+          key={option}
+          value={option === "Select grade..." ? "" : option}
+        >
+          {option}
+        </option>
+      ))}
+    </select>
+  </div>
+  <div style={{ fontSize: 12, fontWeight: "bold" }}>Time</div>
+  <div>
+    <input
+      type="time"
+      value={fields.time}
+      onChange={(e) => handleFieldChange("time", e.target.value)}
+      style={inputStyle("time")}
+    />
+  </div>
+
+  {/* Row 4 */}
+  <div style={{ fontSize: 12, fontWeight: "bold" }}>Observer</div>
+  <div>
+    <input
+      value={fields.observer}
+      onChange={(e) => handleFieldChange("observer", e.target.value)}
+      style={inputStyle("observer")}
+    />
+  </div>
+  <div style={{ fontSize: 12, fontWeight: "bold" }}>Content</div>
+  <div>
+    <select
+      value={fields.content}
+      onChange={(e) => handleFieldChange("content", e.target.value)}
+      style={selectStyle("content")}
+    >
+      {CONTENT_OPTIONS.map((option) => (
+        <option
+          key={option}
+          value={option === "Select content..." ? "" : option}
+        >
+          {option}
+        </option>
+      ))}
+    </select>
+  </div>
+</div>
 
           <div
             style={{
