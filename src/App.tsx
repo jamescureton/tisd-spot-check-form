@@ -520,35 +520,34 @@ const payload = {
   }}
 >
   {/* Row 1: Campus + Observer */}
-  <div style={{ fontSize: 12, fontWeight: "bold" }}>Campus</div>
-  <div>
-    <select
-      value={fields.campus}
-      onChange={(e) => handleFieldChange("campus", e.target.value)}
-      style={selectStyle("campus")}
-    >
-      {CAMPUS_OPTIONS.map((option) => (
-        <option
-          key={option}
-          value={option === "Select campus..." ? "" : option}
-        >
-          {option}
-        </option>
-      ))}
-    </select>
-  </div>
+<div style={{ fontSize: 12, fontWeight: "bold" }}>Campus</div>
+<div style={{ gridColumn: "span 2" }}>
+  <select
+    value={fields.campus}
+    onChange={(e) => handleFieldChange("campus", e.target.value)}
+    style={selectStyle("campus")}
+  >
+    {CAMPUS_OPTIONS.map((option) => (
+      <option
+        key={option}
+        value={option === "Select campus..." ? "" : option}
+      >
+        {option}
+      </option>
+    ))}
+  </select>
+</div>
 
-  <div style={{ fontSize: 12, fontWeight: "bold" }}>Observer</div>
-  <div>
-    <input
-      value={fields.observer}
-      onChange={(e) => handleFieldChange("observer", e.target.value)}
-      style={inputStyle("observer")}
-    />
-  </div>
+<div style={{ fontSize: 12, fontWeight: "bold" }}>Observer</div>
+<div style={{ gridColumn: "span 2" }}>
+  <input
+    value={fields.observer}
+    onChange={(e) => handleFieldChange("observer", e.target.value)}
+    style={inputStyle("observer")}
+  />
+</div>
 
-  <div></div>
-  <div></div>
+
 
   {/* Row 2: Teacher + Grade + Content */}
   <div style={{ fontSize: 12, fontWeight: "bold" }}>Teacher</div>
@@ -596,28 +595,26 @@ const payload = {
   </div>
 
   {/* Row 3: Date + Time */}
-  <div style={{ fontSize: 12, fontWeight: "bold" }}>Date</div>
-  <div>
-    <input
-      type="date"
-      value={fields.date}
-      onChange={(e) => handleFieldChange("date", e.target.value)}
-      style={inputStyle("date")}
-    />
-  </div>
+<div style={{ fontSize: 12, fontWeight: "bold" }}>Date</div>
+<div style={{ gridColumn: "span 2" }}>
+  <input
+    type="date"
+    value={fields.date}
+    onChange={(e) => handleFieldChange("date", e.target.value)}
+    style={inputStyle("date")}
+  />
+</div>
 
-  <div style={{ fontSize: 12, fontWeight: "bold" }}>Time</div>
-  <div>
-    <input
-      type="time"
-      value={fields.time}
-      onChange={(e) => handleFieldChange("time", e.target.value)}
-      style={inputStyle("time")}
-    />
-  </div>
+<div style={{ fontSize: 12, fontWeight: "bold" }}>Time</div>
+<div style={{ gridColumn: "span 2" }}>
+  <input
+    type="time"
+    value={fields.time}
+    onChange={(e) => handleFieldChange("time", e.target.value)}
+    style={inputStyle("time")}
+  />
+</div>
 
-  <div></div>
-  <div></div>
 </div>
 
           <div
