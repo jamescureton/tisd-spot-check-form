@@ -513,25 +513,13 @@ const payload = {
         <div
   style={{
     display: "grid",
-    gridTemplateColumns: "140px 1fr 140px 1fr",
+    gridTemplateColumns: "120px 1fr 120px 1fr 120px 1fr",
     gap: 10,
     marginBottom: 20,
     alignItems: "center",
   }}
 >
-  {/* Row 1 */}
-  <div style={{ fontSize: 12, fontWeight: "bold" }}>Teacher</div>
-  <div>
-    <input
-      value={fields.teacher}
-      onChange={(e) => handleFieldChange("teacher", e.target.value)}
-      style={inputStyle("teacher")}
-    />
-  </div>
-  <div></div>
-  <div></div>
-
-  {/* Row 2 */}
+  {/* Row 1: Campus + Observer */}
   <div style={{ fontSize: 12, fontWeight: "bold" }}>Campus</div>
   <div>
     <select
@@ -549,18 +537,30 @@ const payload = {
       ))}
     </select>
   </div>
-  <div style={{ fontSize: 12, fontWeight: "bold" }}>Date</div>
+
+  <div style={{ fontSize: 12, fontWeight: "bold" }}>Observer</div>
   <div>
     <input
-      type="date"
-      value={fields.date}
-      onChange={(e) => handleFieldChange("date", e.target.value)}
-      style={inputStyle("date")}
+      value={fields.observer}
+      onChange={(e) => handleFieldChange("observer", e.target.value)}
+      style={inputStyle("observer")}
     />
   </div>
 
-  {/* Row 3 */}
-  <div style={{ fontSize: 12, fontWeight: "bold" }}>Grade Level</div>
+  <div></div>
+  <div></div>
+
+  {/* Row 2: Teacher + Grade + Content */}
+  <div style={{ fontSize: 12, fontWeight: "bold" }}>Teacher</div>
+  <div>
+    <input
+      value={fields.teacher}
+      onChange={(e) => handleFieldChange("teacher", e.target.value)}
+      style={inputStyle("teacher")}
+    />
+  </div>
+
+  <div style={{ fontSize: 12, fontWeight: "bold" }}>Grade</div>
   <div>
     <select
       value={fields.grade}
@@ -576,25 +576,6 @@ const payload = {
         </option>
       ))}
     </select>
-  </div>
-  <div style={{ fontSize: 12, fontWeight: "bold" }}>Time</div>
-  <div>
-    <input
-      type="time"
-      value={fields.time}
-      onChange={(e) => handleFieldChange("time", e.target.value)}
-      style={inputStyle("time")}
-    />
-  </div>
-
-  {/* Row 4 */}
-  <div style={{ fontSize: 12, fontWeight: "bold" }}>Observer</div>
-  <div>
-    <input
-      value={fields.observer}
-      onChange={(e) => handleFieldChange("observer", e.target.value)}
-      style={inputStyle("observer")}
-    />
   </div>
   <div style={{ fontSize: 12, fontWeight: "bold" }}>Content</div>
   <div>
@@ -613,6 +594,30 @@ const payload = {
       ))}
     </select>
   </div>
+
+  {/* Row 3: Date + Time */}
+  <div style={{ fontSize: 12, fontWeight: "bold" }}>Date</div>
+  <div>
+    <input
+      type="date"
+      value={fields.date}
+      onChange={(e) => handleFieldChange("date", e.target.value)}
+      style={inputStyle("date")}
+    />
+  </div>
+
+  <div style={{ fontSize: 12, fontWeight: "bold" }}>Time</div>
+  <div>
+    <input
+      type="time"
+      value={fields.time}
+      onChange={(e) => handleFieldChange("time", e.target.value)}
+      style={inputStyle("time")}
+    />
+  </div>
+
+  <div></div>
+  <div></div>
 </div>
 
           <div
@@ -635,7 +640,7 @@ const payload = {
           >
             <tbody>
             <tr style={{ background: "#e8eef5" }}>
-  <td style={{ padding: 8, fontWeight: "bold" }}>
+  <td style={{ padding: 8, fontWeight: "bold", fontSize: 11, }}>
     Click the number of points earned (U = Unsatisfactory, P = Partially Effective, and M = Mostly Effective)
   </td>
   <td style={{ textAlign: "center", fontWeight: "bold" }}></td>
@@ -703,23 +708,31 @@ const payload = {
     width: "100%",
   }}
 >
-  <div style={{ textAlign: "right", fontWeight: "bold", paddingRight: 8 }}>
+    {/* Total Points */}
+    <div style={{ textAlign: "right", fontWeight: "bold", paddingRight: 8 }}>
     Total Points:
   </div>
-  <div></div>
   <div></div>
   <div style={{ textAlign: "center", fontWeight: "bold" }}>
     {totalPoints.toFixed(1)}
   </div>
+  <div></div>
 
+  {/* Proficiency */}
   <div style={{ textAlign: "right", fontWeight: "bold", paddingRight: 8 }}>
     Proficiency Projection:
   </div>
   <div></div>
-  <div></div>
-  <div style={{ textAlign: "center", fontWeight: "bold", color: proficiency.color }}>
+  <div
+    style={{
+      textAlign: "center",
+      fontWeight: "bold",
+      color: proficiency.color,
+    }}
+  >
     {proficiency.label}
   </div>
+  <div></div>
 </div>  
 
           <div style={{ marginBottom: 12 }}>
