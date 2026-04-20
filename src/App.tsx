@@ -286,10 +286,10 @@ function ObservationForm() {
         <FormHeader />
         <div style={{ padding: 20 }}>
 {/* ===== FORM FIELDS ===== */}
-<div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
+<div style={{ display: "flex", flexDirection: "column", gap: 20, marginBottom: 24 }}>
 
   {/* Row 1: Campus | Observer */}
-  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
     <div>
       <label style={{ fontWeight: "bold", fontSize: 12 }}>Campus *</label>
       <select
@@ -323,7 +323,7 @@ function ObservationForm() {
   </div>
 
   {/* Row 2: Teacher | Grade | Content */}
-  <div style={{ display: "grid", gridTemplateColumns: "1fr 0.8fr 1fr", gap: 16 }}>
+  <div style={{ display: "grid", gridTemplateColumns: "1.2fr 0.6fr 1fr", gap: 24 }}>
     <div>
       <label style={{ fontWeight: "bold", fontSize: 12 }}>Teacher *</label>
       <input
@@ -368,7 +368,7 @@ function ObservationForm() {
   </div>
 
   {/* Row 3: Date | Time */}
-  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28 }}>
     <div>
       <label style={{ fontWeight: "bold", fontSize: 12 }}>Date *</label>
       <input
@@ -390,6 +390,7 @@ function ObservationForm() {
     </div>
   </div>
 </div>
+
 
 
           {/* Progress bar */}
