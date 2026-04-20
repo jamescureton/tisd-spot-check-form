@@ -285,76 +285,112 @@ function ObservationForm() {
       <div style={{ maxWidth: 900, margin: "0 auto", background: WHITE, boxShadow: "0 4px 24px rgba(0,0,0,0.15)", borderRadius: 4, overflow: "hidden" }}>
         <FormHeader />
         <div style={{ padding: 20 }}>
-          {/* ===== FORM FIELDS ===== */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
-            {/* Campus */}
-            <div>
-              <label>Campus *</label>
-              <select value={fields.campus} onChange={(e) => handleFieldChange("campus", e.target.value)} style={inputStyle("campus")}>
-                <option value="">Select campus...</option>
-                <option>Austin Elementary School</option>
-                <option>Boulter Middle School</option>
-                <option>Clarkston Elementary School</option>
-                <option>Dixie Elementary School</option>
-                <option>Douglas Elementary School</option>
-                <option>Griffin Elementary School</option>
-                <option>Jones Elementary School</option>
-                <option>Orr Elementary School</option>
-                <option>Peete Elementary School</option>
-                <option>Ramey Elementary School</option>
-              </select>
-            </div>
+{/* ===== FORM FIELDS ===== */}
+<div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
 
-            {/* Observer */}
-            <div>
-              <label>Observer *</label>
-              <input value={fields.observer} onChange={(e) => handleFieldChange("observer", e.target.value)} style={inputStyle("observer")} />
-            </div>
+  {/* Row 1: Campus | Observer */}
+  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+    <div>
+      <label style={{ fontWeight: "bold", fontSize: 12 }}>Campus *</label>
+      <select
+        value={fields.campus}
+        onChange={(e) => handleFieldChange("campus", e.target.value)}
+        style={inputStyle("campus")}
+      >
+        <option value="">Select campus...</option>
+        <option>Austin Elementary School</option>
+        <option>Boulter Middle School</option>
+        <option>Clarkston Elementary School</option>
+        <option>Dixie Elementary School</option>
+        <option>Douglas Elementary School</option>
+        <option>Griffin Elementary School</option>
+        <option>Jones Elementary School</option>
+        <option>Orr Elementary School</option>
+        <option>Peete Elementary School</option>
+        <option>Ramey Elementary School</option>
+      </select>
+    </div>
 
-            {/* Teacher */}
-            <div>
-              <label>Teacher *</label>
-              <input value={fields.teacher} onChange={(e) => handleFieldChange("teacher", e.target.value)} style={inputStyle("teacher")} />
-            </div>
+    <div>
+      <label style={{ fontWeight: "bold", fontSize: 12 }}>Observer *</label>
+      <input
+        type="text"
+        value={fields.observer}
+        onChange={(e) => handleFieldChange("observer", e.target.value)}
+        style={inputStyle("observer")}
+      />
+    </div>
+  </div>
 
-            {/* Grade */}
-            <div>
-              <label>Grade *</label>
-              <select value={fields.grade} onChange={(e) => handleFieldChange("grade", e.target.value)} style={inputStyle("grade")}>
-                <option value="">Select grade...</option>
-                <option>3rd</option>
-                <option>4th</option>
-                <option>5th</option>
-                <option>6th</option>
-                <option>7th</option>
-                <option>8th</option>
-              </select>
-            </div>
+  {/* Row 2: Teacher | Grade | Content */}
+  <div style={{ display: "grid", gridTemplateColumns: "1fr 0.8fr 1fr", gap: 16 }}>
+    <div>
+      <label style={{ fontWeight: "bold", fontSize: 12 }}>Teacher *</label>
+      <input
+        type="text"
+        value={fields.teacher}
+        onChange={(e) => handleFieldChange("teacher", e.target.value)}
+        style={inputStyle("teacher")}
+      />
+    </div>
 
-            {/* Date */}
-            <div>
-              <label>Date *</label>
-              <input type="date" value={fields.date} onChange={(e) => handleFieldChange("date", e.target.value)} style={inputStyle("date")} />
-            </div>
+    <div>
+      <label style={{ fontWeight: "bold", fontSize: 12 }}>Grade *</label>
+      <select
+        value={fields.grade}
+        onChange={(e) => handleFieldChange("grade", e.target.value)}
+        style={inputStyle("grade")}
+      >
+        <option value="">Select grade...</option>
+        <option>3rd</option>
+        <option>4th</option>
+        <option>5th</option>
+        <option>6th</option>
+        <option>7th</option>
+        <option>8th</option>
+      </select>
+    </div>
 
-            {/* Time */}
-            <div>
-              <label>Time</label>
-              <input type="time" value={fields.time} onChange={(e) => handleFieldChange("time", e.target.value)} style={inputStyle("time")} />
-            </div>
+    <div>
+      <label style={{ fontWeight: "bold", fontSize: 12 }}>Content *</label>
+      <select
+        value={fields.content}
+        onChange={(e) => handleFieldChange("content", e.target.value)}
+        style={inputStyle("content")}
+      >
+        <option value="">Select content...</option>
+        <option>Math</option>
+        <option>Reading</option>
+        <option>Science</option>
+        <option>Social Studies</option>
+      </select>
+    </div>
+  </div>
 
-            {/* Content */}
-            <div>
-              <label>Content *</label>
-              <select value={fields.content} onChange={(e) => handleFieldChange("content", e.target.value)} style={inputStyle("content")}>
-                <option value="">Select content...</option>
-                <option>Math</option>
-                <option>Reading</option>
-                <option>Science</option>
-                <option>Social Studies</option>
-              </select>
-            </div>
-          </div>
+  {/* Row 3: Date | Time */}
+  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+    <div>
+      <label style={{ fontWeight: "bold", fontSize: 12 }}>Date *</label>
+      <input
+        type="date"
+        value={fields.date}
+        onChange={(e) => handleFieldChange("date", e.target.value)}
+        style={inputStyle("date")}
+      />
+    </div>
+
+    <div>
+      <label style={{ fontWeight: "bold", fontSize: 12 }}>Time</label>
+      <input
+        type="time"
+        value={fields.time}
+        onChange={(e) => handleFieldChange("time", e.target.value)}
+        style={inputStyle("time")}
+      />
+    </div>
+  </div>
+</div>
+
 
           {/* Progress bar */}
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
