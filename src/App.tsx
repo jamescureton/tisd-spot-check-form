@@ -309,23 +309,12 @@ function ObservationForm() {
   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
     <div>
       <label style={{ fontWeight: "bold", fontSize: 12 }}>Campus *</label>
-      <select
-        value={fields.campus}
-        onChange={(e) => handleFieldChange("campus", e.target.value)}
-        style={inputStyle("campus")}
-      >
-        <option value="">Select campus...</option>
-        <option>Austin Elementary School</option>
-        <option>Boulter Middle School</option>
-        <option>Clarkston Elementary School</option>
-        <option>Dixie Elementary School</option>
-        <option>Douglas Elementary School</option>
-        <option>Griffin Elementary School</option>
-        <option>Jones Elementary School</option>
-        <option>Orr Elementary School</option>
-        <option>Peete Elementary School</option>
-        <option>Ramey Elementary School</option>
-      </select>
+      <input
+  type="text"
+  value={fields.campus}
+  onChange={(e) => handleFieldChange("campus", e.target.value)}
+  style={inputStyle("campus")}
+/>
     </div>
 
     <div>
