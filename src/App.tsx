@@ -180,13 +180,21 @@ function ObservationForm() {
   const [praise, setPraise] = useState("");
   const [polish, setPolish] = useState("");
   const [question, setQuestion] = useState("");
+  const [observerLocked, setObserverLocked] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const observer = params.get("observer");
     const campus = params.get("campus");
-    if (observer) setFields(prev => ({ ...prev, observer: decodeURIComponent(observer) }));
-    if (campus) setFields(prev => ({ ...prev, campus: decodeURIComponent(campus) }));
+  
+    if (observer) {
+      setFields((prev) => ({ ...prev, observer: decodeURIComponent(observer) }));
+      setObserverLocked(true);
+    }
+  
+    if (campus) {
+      setFields((prev) => ({ ...prev, campus: decodeURIComponent(campus) }));
+    }
   }, []);
   
     const answeredCount = ALL_ITEMS.filter((item) => scores[item.id]).length;
@@ -323,11 +331,16 @@ function ObservationForm() {
     <div>
       <label style={{ fontWeight: "bold", fontSize: 12 }}>Observer *</label>
       <input
-        type="text"
-        value={fields.observer}
-        onChange={(e) => handleFieldChange("observer", e.target.value)}
-        style={inputStyle("observer")}
-      />
+  type="text"
+  value={fields.observer}
+  onChange={(e) => handleFieldChange("observer", e.target.value)}
+  style={{
+    ...inputStyle("observer"),
+    background: observerLocked ? "#f3f4f6" : WHITE,
+    cursor: observerLocked ? "not-allowed" : "text"
+  }}
+  readOnly={observerLocked}
+/>
     </div>
   </div>
 
