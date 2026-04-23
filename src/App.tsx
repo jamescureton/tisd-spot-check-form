@@ -189,9 +189,7 @@ function ObservationForm() {
     if (campus) setFields(prev => ({ ...prev, campus: decodeURIComponent(campus) }));
   }, []);
   
-  const answeredCount = ALL_ITEMS.filter((item) => scores[item.id]).length;
-
-  const answeredCount = ALL_ITEMS.filter((item) => scores[item.id]).length;
+    const answeredCount = ALL_ITEMS.filter((item) => scores[item.id]).length;
   const allScored = answeredCount === ALL_ITEMS.length;
   const totalPoints = ALL_ITEMS.reduce((sum, item) => {
     const selected = scores[item.id];
