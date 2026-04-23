@@ -144,23 +144,24 @@ function ConfirmationScreen({ fields, totalPoints, proficiency, onNew }: { field
 
 // ==== AUTH CALLBACK ====
 function AuthCallback() {
-  const [status, setStatus] = useState("Completing sign-in...");
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
     if (code) {
-      setStatus("Sign-in successful! Redirecting...");
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 1500);
+      window.location.href = `/api/classlink-callback?code=${code}`;
     } else {
-      setStatus("Sign-in could not be completed. Please try again.");
+      window.location.href = "/";
     }
   }, []);
+
   return (
-    <div style={{ fontFamily: "Arial, sans-serif", background: "#f0f2f5", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ background: WHITE, borderRadius: 8, padding: "40px 48px", boxShadow: "0 4px 24px rgba(0,0,0,0.15)", textAlign: "center", maxWidth: 400 }}>
-        <div style={{ fontSize: 15, color: NAVY, fontWeight: "bold", marginBottom: 8 }}>{status}</div>
+    <div style={{ fontFamily: "Arial, sans-serif", background: "#f0f2f5", minHeight: "100vh",
+      display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ background: "#fff", borderRadius: 8, padding: "40px 48px",
+        boxShadow: "0 4px 24px rgba(0,0,0,0.15)", textAlign: "center", maxWidth: 400 }}>
+        <div style={{ fontSize: 15, color: "#1B2A4A", fontWeight: "bold", marginBottom: 8 }}>
+          Signing in...
+        </div>
         <div style={{ fontSize: 12, color: "#888" }}>Tyler ISD Core Spot Observation Form</div>
       </div>
     </div>
@@ -179,6 +180,16 @@ function ObservationForm() {
   const [praise, setPraise] = useState("");
   const [polish, setPolish] = useState("");
   const [question, setQuestion] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const observer = params.get("observer");
+    const campus = params.get("campus");
+    if (observer) setFields(prev => ({ ...prev, observer: decodeURIComponent(observer) }));
+    if (campus) setFields(prev => ({ ...prev, campus: decodeURIComponent(campus) }));
+  }, []);
+  
+  const answeredCount = ALL_ITEMS.filter((item) => scores[item.id]).length;
 
   const answeredCount = ALL_ITEMS.filter((item) => scores[item.id]).length;
   const allScored = answeredCount === ALL_ITEMS.length;
