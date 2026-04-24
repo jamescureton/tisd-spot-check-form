@@ -28,7 +28,7 @@ export default async function handler(req, res) {
       const user = await userRes.json();
   
       const observer = encodeURIComponent(`${user.FirstName} ${user.LastName}`);
-      const campus = encodeURIComponent(user.Building || "");
+      const campus = encodeURIComponent(user.BuildingId || "");
   
       // Redirect to form with pre-fill params
       res.redirect(`/?observer=${observer}&campus=${campus}`);
