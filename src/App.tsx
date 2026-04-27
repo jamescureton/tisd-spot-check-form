@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 
 const SCRIPT_URL =
-  "[script.google.com](https://script.google.com/macros/s/AKfycbzun92OtVuFcWlTd2pNDHT8MVlGscRiC39BXIeuM33sN6x0Viwal61WbgzQK4BbF0fZ/exec)";
+  "https://script.google.com/macros/s/AKfycbzun92OtVuFcWlTd2pNDHT8MVlGscRiC39BXIeuM33sN6x0Viwal61WbgzQK4BbF0fZ/exec";
+
+const SHEET_ID = "1_0Q-ufFrf7kYal3b4JB2vIEFv2A4iSmAIRxtE8lL-5k";
 
 const NAVY = "#1B2A4A";
 const RED = "#C0272D";
@@ -15,6 +17,15 @@ type FormFields = { teacher: string; campus: string; grade: string; observer: st
 type ScoreMap = { [key: string]: ScoreLevel; };
 type ErrorMap = { [key: string]: boolean; };
 type RubricItem = { id: string; bold: string; text: string; italic?: string; u: number; p: number; m: number; };
+
+async function fetchSheetData(sheetName: string): Promise<string[][]> {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+  const res = await fetch(url);
+  const text = await res.text();
+  return text.trim().split("\n").map(row =>
+    row.split(",").map(cell => cell.replace(/^"|"$/g, "").trim())
+  );
+}
 
 function getItemPoint(itemId: string, scores: ScoreMap) {
   const item = ALL_ITEMS.find((x) => x.id === itemId);
@@ -63,19 +74,8 @@ function getProficiency(total: number) {
 // ==== HEADER ====
 function FormHeader() {
   return (
-    <div
-      style={{
-        background: NAVY,
-        padding: "20px 0",
-        textAlign: "center",
-        color: WHITE,
-        fontFamily: "'Arial Black', sans-serif",
-        borderBottom: "2px solid #0F1A33",
-      }}
-    >
-      <div style={{ fontSize: 26, fontWeight: 900 }}>
-        2026-27 Tyler ISD Core Spot Observation Form
-      </div>
+    <div style={{ background: NAVY, padding: "20px 0", textAlign: "center", color: WHITE, fontFamily: "'Arial Black', sans-serif", borderBottom: "2px solid #0F1A33" }}>
+      <div style={{ fontSize: 26, fontWeight: 900 }}>2026-27 Tyler ISD Core Spot Observation Form</div>
     </div>
   );
 }
@@ -95,16 +95,11 @@ function ScoreRow(props: { item: RubricItem; value: ScoreLevel; onChange: (id: s
             type="button"
             onClick={() => onChange(item.id, value === level ? null : level)}
             style={{
-              width: 28,
-              height: 28,
-              borderRadius: "50%",
-              border: "2px solid",
+              width: 28, height: 28, borderRadius: "50%", border: "2px solid",
               borderColor: value === level ? (level === "u" ? RED : level === "p" ? GOLD : "#2a7a3a") : "#ccc",
               background: value === level ? (level === "u" ? RED : level === "p" ? GOLD : "#2a7a3a") : WHITE,
               color: value === level ? WHITE : "#666",
-              fontWeight: "bold",
-              fontSize: 11,
-              cursor: "pointer",
+              fontWeight: "bold", fontSize: 11, cursor: "pointer",
             }}
           >
             {item[level]}
@@ -125,14 +120,9 @@ function ConfirmationScreen({ fields, totalPoints, proficiency, onNew }: { field
           <div style={{ width: 72, height: 72, borderRadius: "50%", background: "#2a7a3a", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 36, color: WHITE }}>✓</div>
           <div style={{ fontSize: 24, fontWeight: "bold", color: NAVY, marginBottom: 8 }}>Observation Submitted</div>
           <div style={{ fontSize: 14, color: "#555", marginBottom: 32 }}>Observation for <strong>{fields.teacher}</strong> has been recorded successfully.</div>
-
           <div style={{ background: "#f0f7f0", border: "1px solid #b8ddb8", borderRadius: 6, padding: "24px 28px", maxWidth: 500, margin: "0 auto" }}>
             <div style={{ fontSize: 15, color: "#2a5a2a", fontWeight: "bold", marginBottom: 6 }}>Would you like to submit another spot observation?</div>
-            <button
-              type="button"
-              onClick={onNew}
-              style={{ background: NAVY, color: WHITE, border: "none", borderRadius: 4, padding: "12px 36px", fontSize: 14, fontWeight: "bold", cursor: "pointer", letterSpacing: 0.5, marginTop: 10 }}
-            >
+            <button type="button" onClick={onNew} style={{ background: NAVY, color: WHITE, border: "none", borderRadius: 4, padding: "12px 36px", fontSize: 14, fontWeight: "bold", cursor: "pointer", letterSpacing: 0.5, marginTop: 10 }}>
               ✓ Yes, Start New Observation
             </button>
           </div>
@@ -155,13 +145,9 @@ function AuthCallback() {
   }, []);
 
   return (
-    <div style={{ fontFamily: "Arial, sans-serif", background: "#f0f2f5", minHeight: "100vh",
-      display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ background: "#fff", borderRadius: 8, padding: "40px 48px",
-        boxShadow: "0 4px 24px rgba(0,0,0,0.15)", textAlign: "center", maxWidth: 400 }}>
-        <div style={{ fontSize: 15, color: "#1B2A4A", fontWeight: "bold", marginBottom: 8 }}>
-          Signing in...
-        </div>
+    <div style={{ fontFamily: "Arial, sans-serif", background: "#f0f2f5", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ background: "#fff", borderRadius: 8, padding: "40px 48px", boxShadow: "0 4px 24px rgba(0,0,0,0.15)", textAlign: "center", maxWidth: 400 }}>
+        <div style={{ fontSize: 15, color: "#1B2A4A", fontWeight: "bold", marginBottom: 8 }}>Signing in...</div>
         <div style={{ fontSize: 12, color: "#888" }}>Tyler ISD Core Spot Observation Form</div>
       </div>
     </div>
@@ -172,6 +158,7 @@ function AuthCallback() {
 function ObservationForm() {
   const emptyFields: FormFields = { teacher: "", campus: "", grade: "", observer: "", date: "", time: "", content: "" };
   const [fields, setFields] = useState<FormFields>(emptyFields);
+  const [localId, setLocalId] = useState("");
   const [scores, setScores] = useState<ScoreMap>({});
   const [errors, setErrors] = useState<ErrorMap>({});
   const [attempted, setAttempted] = useState(false);
@@ -181,23 +168,76 @@ function ObservationForm() {
   const [polish, setPolish] = useState("");
   const [question, setQuestion] = useState("");
   const [observerLocked, setObserverLocked] = useState(false);
+  const [campusLocked, setCampusLocked] = useState(false);
+  const [teacherList, setTeacherList] = useState<string[]>([]);
+  const [campusTeacherMap, setCampusTeacherMap] = useState<Record<string, string[]>>({});
+  const [loadingData, setLoadingData] = useState(true);
 
+  // On mount: read URL params, fetch observer campus, fetch teacher map
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const observer = params.get("observer");
-    const campus = params.get("campus");
-  
-    if (observer) {
-      setFields((prev) => ({ ...prev, observer: decodeURIComponent(observer) }));
+    const observerParam = params.get("observer");
+    const localIdParam = params.get("localId");
+
+    if (observerParam) {
+      setFields(prev => ({ ...prev, observer: decodeURIComponent(observerParam) }));
       setObserverLocked(true);
     }
-  
-    if (campus) {
-      setFields((prev) => ({ ...prev, campus: decodeURIComponent(campus) }));
+    if (localIdParam) {
+      setLocalId(decodeURIComponent(localIdParam));
     }
+
+    async function loadData() {
+      setLoadingData(true);
+      try {
+        // Fetch campus_teachers tab to build map
+        const teacherRows = await fetchSheetData("campus_teachers");
+        const map: Record<string, string[]> = {};
+        teacherRows.slice(1).forEach(row => {
+          const campus = row[0]?.trim();
+          const teacher = row[1]?.trim();
+          if (campus && teacher) {
+            if (!map[campus]) map[campus] = [];
+            map[campus].push(teacher);
+          }
+        });
+        setCampusTeacherMap(map);
+
+        // Fetch observers tab to find campus for this localId
+        if (localIdParam) {
+          const observerRows = await fetchSheetData("observers");
+          const decodedId = decodeURIComponent(localIdParam);
+          // headers: Local ID, Name, Campus
+          const match = observerRows.slice(1).find(row => row[0]?.trim() === decodedId);
+          if (match) {
+            const campus = match[2]?.trim();
+            if (campus && campus.toLowerCase() !== "district") {
+              setFields(prev => ({ ...prev, campus }));
+              setCampusLocked(true);
+              setTeacherList(map[campus] || []);
+            }
+            // If district, leave campus blank and unlocked — user picks from dropdown
+          }
+        }
+      } catch (err) {
+        console.error("Error loading sheet data:", err);
+      } finally {
+        setLoadingData(false);
+      }
+    }
+
+    loadData();
   }, []);
-  
-    const answeredCount = ALL_ITEMS.filter((item) => scores[item.id]).length;
+
+  // Update teacher list whenever campus changes (for district-level observers)
+  useEffect(() => {
+    if (!campusLocked && fields.campus) {
+      setTeacherList(campusTeacherMap[fields.campus] || []);
+      setFields(prev => ({ ...prev, teacher: "" }));
+    }
+  }, [fields.campus, campusTeacherMap, campusLocked]);
+
+  const answeredCount = ALL_ITEMS.filter((item) => scores[item.id]).length;
   const allScored = answeredCount === ALL_ITEMS.length;
   const totalPoints = ALL_ITEMS.reduce((sum, item) => {
     const selected = scores[item.id];
@@ -236,22 +276,17 @@ function ObservationForm() {
     const newErrors: ErrorMap = {};
     let bad = false;
     REQUIRED_FIELDS.forEach((key) => {
-      if (!fields[key].trim()) {
-        newErrors[key] = true;
-        bad = true;
-      }
+      if (!fields[key].trim()) { newErrors[key] = true; bad = true; }
     });
     ALL_ITEMS.forEach((item) => {
-      if (!scores[item.id]) {
-        newErrors[item.id] = true;
-        bad = true;
-      }
+      if (!scores[item.id]) { newErrors[item.id] = true; bad = true; }
     });
     setErrors(newErrors);
     if (bad) return;
 
     const payload = {
       ...fields,
+      localId,               // hidden field exported to sheet
       totalPoints,
       proficiencyLevel: getProficiency(totalPoints).label,
       praise,
@@ -277,14 +312,7 @@ function ObservationForm() {
   }
 
   if (submitted)
-    return (
-      <ConfirmationScreen
-        fields={fields}
-        totalPoints={totalPoints}
-        proficiency={proficiency}
-        onNew={handleNew}
-      />
-    );
+    return <ConfirmationScreen fields={fields} totalPoints={totalPoints} proficiency={proficiency} onNew={handleNew} />;
 
   function inputStyle(key: string) {
     return {
@@ -297,112 +325,111 @@ function ObservationForm() {
     };
   }
 
+  function lockedStyle(key: string) {
+    return { ...inputStyle(key), background: "#f3f4f6", cursor: "not-allowed" };
+  }
+
+  const campusOptions = Object.keys(campusTeacherMap).sort();
+
   return (
     <div style={{ fontFamily: "Arial, sans-serif", background: "#f0f2f5", minHeight: "100vh", padding: "20px 0" }}>
       <div style={{ maxWidth: 900, margin: "0 auto", background: WHITE, boxShadow: "0 4px 24px rgba(0,0,0,0.15)", borderRadius: 4, overflow: "hidden" }}>
         <FormHeader />
         <div style={{ padding: 20 }}>
-{/* ===== FORM FIELDS ===== */}
-<div style={{ display: "flex", flexDirection: "column", gap: 20, marginBottom: 24 }}>
 
-  {/* Row 1: Campus | Observer */}
-  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-    <div>
-      <label style={{ fontWeight: "bold", fontSize: 12 }}>Campus *</label>
-      <input
-  type="text"
-  value={fields.campus}
-  onChange={(e) => handleFieldChange("campus", e.target.value)}
-  style={inputStyle("campus")}
-/>
-    </div>
+          {loadingData && (
+            <div style={{ textAlign: "center", padding: "12px 0", fontSize: 12, color: "#888", marginBottom: 12 }}>
+              Loading observer data...
+            </div>
+          )}
 
-    <div>
-      <label style={{ fontWeight: "bold", fontSize: 12 }}>Observer *</label>
-      <input
-  type="text"
-  value={fields.observer}
-  onChange={(e) => handleFieldChange("observer", e.target.value)}
-  style={{
-    ...inputStyle("observer"),
-    background: observerLocked ? "#f3f4f6" : WHITE,
-    cursor: observerLocked ? "not-allowed" : "text"
-  }}
-  readOnly={observerLocked}
-/>
-    </div>
-  </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 20, marginBottom: 24 }}>
 
-  {/* Row 2: Teacher | Grade | Content */}
-  <div style={{ display: "grid", gridTemplateColumns: "1.2fr 0.6fr 1fr", gap: 24 }}>
-    <div>
-      <label style={{ fontWeight: "bold", fontSize: 12 }}>Teacher *</label>
-      <input
-        type="text"
-        value={fields.teacher}
-        onChange={(e) => handleFieldChange("teacher", e.target.value)}
-        style={inputStyle("teacher")}
-      />
-    </div>
+            {/* Row 1: Campus | Observer */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+              <div>
+                <label style={{ fontWeight: "bold", fontSize: 12 }}>Campus *</label>
+                {campusLocked ? (
+                  <input type="text" value={fields.campus} readOnly style={lockedStyle("campus")} />
+                ) : (
+                  <select
+                    value={fields.campus}
+                    onChange={(e) => handleFieldChange("campus", e.target.value)}
+                    style={inputStyle("campus")}
+                  >
+                    <option value="">Select campus...</option>
+                    {campusOptions.map(c => <option key={c}>{c}</option>)}
+                  </select>
+                )}
+              </div>
 
-    <div>
-      <label style={{ fontWeight: "bold", fontSize: 12 }}>Grade *</label>
-      <select
-        value={fields.grade}
-        onChange={(e) => handleFieldChange("grade", e.target.value)}
-        style={inputStyle("grade")}
-      >
-        <option value="">Select grade...</option>
-        <option>3rd</option>
-        <option>4th</option>
-        <option>5th</option>
-        <option>6th</option>
-        <option>7th</option>
-        <option>8th</option>
-      </select>
-    </div>
+              <div>
+                <label style={{ fontWeight: "bold", fontSize: 12 }}>Observer *</label>
+                <input
+                  type="text"
+                  value={fields.observer}
+                  onChange={(e) => handleFieldChange("observer", e.target.value)}
+                  style={observerLocked ? lockedStyle("observer") : inputStyle("observer")}
+                  readOnly={observerLocked}
+                />
+              </div>
+            </div>
 
-    <div>
-      <label style={{ fontWeight: "bold", fontSize: 12 }}>Content *</label>
-      <select
-        value={fields.content}
-        onChange={(e) => handleFieldChange("content", e.target.value)}
-        style={inputStyle("content")}
-      >
-        <option value="">Select content...</option>
-        <option>Math</option>
-        <option>Reading</option>
-        <option>Science</option>
-        <option>Social Studies</option>
-      </select>
-    </div>
-  </div>
+            {/* Row 2: Teacher | Grade | Content */}
+            <div style={{ display: "grid", gridTemplateColumns: "1.2fr 0.6fr 1fr", gap: 24 }}>
+              <div>
+                <label style={{ fontWeight: "bold", fontSize: 12 }}>Teacher *</label>
+                {teacherList.length > 0 ? (
+                  <select
+                    value={fields.teacher}
+                    onChange={(e) => handleFieldChange("teacher", e.target.value)}
+                    style={inputStyle("teacher")}
+                  >
+                    <option value="">Select teacher...</option>
+                    {teacherList.map(t => <option key={t}>{t}</option>)}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={fields.teacher}
+                    onChange={(e) => handleFieldChange("teacher", e.target.value)}
+                    placeholder={fields.campus ? "No teachers found for this campus" : "Select a campus first"}
+                    style={inputStyle("teacher")}
+                  />
+                )}
+              </div>
 
-  {/* Row 3: Date | Time */}
-  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28 }}>
-    <div>
-      <label style={{ fontWeight: "bold", fontSize: 12 }}>Date *</label>
-      <input
-        type="date"
-        value={fields.date}
-        onChange={(e) => handleFieldChange("date", e.target.value)}
-        style={inputStyle("date")}
-      />
-    </div>
+              <div>
+                <label style={{ fontWeight: "bold", fontSize: 12 }}>Grade *</label>
+                <select value={fields.grade} onChange={(e) => handleFieldChange("grade", e.target.value)} style={inputStyle("grade")}>
+                  <option value="">Select grade...</option>
+                  <option>3rd</option><option>4th</option><option>5th</option>
+                  <option>6th</option><option>7th</option><option>8th</option>
+                </select>
+              </div>
 
-    <div>
-      <label style={{ fontWeight: "bold", fontSize: 12 }}>Time</label>
-      <input
-        type="time"
-        value={fields.time}
-        onChange={(e) => handleFieldChange("time", e.target.value)}
-        style={inputStyle("time")}
-      />
-    </div>
-  </div>
-</div>
+              <div>
+                <label style={{ fontWeight: "bold", fontSize: 12 }}>Content *</label>
+                <select value={fields.content} onChange={(e) => handleFieldChange("content", e.target.value)} style={inputStyle("content")}>
+                  <option value="">Select content...</option>
+                  <option>Math</option><option>Reading</option>
+                  <option>Science</option><option>Social Studies</option>
+                </select>
+              </div>
+            </div>
 
-
+            {/* Row 3: Date | Time */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28 }}>
+              <div>
+                <label style={{ fontWeight: "bold", fontSize: 12 }}>Date *</label>
+                <input type="date" value={fields.date} onChange={(e) => handleFieldChange("date", e.target.value)} style={inputStyle("date")} />
+              </div>
+              <div>
+                <label style={{ fontWeight: "bold", fontSize: 12 }}>Time</label>
+                <input type="time" value={fields.time} onChange={(e) => handleFieldChange("time", e.target.value)} style={inputStyle("time")} />
+              </div>
+            </div>
+          </div>
 
           {/* Progress bar */}
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
@@ -438,12 +465,8 @@ function ObservationForm() {
           {([["Praise", praise, setPraise], ["Polish", polish, setPolish], ["Question", question, setQuestion]] as [string, string, React.Dispatch<React.SetStateAction<string>>][]).map(([label, val, setter]) => (
             <div key={label} style={{ marginBottom: 12 }}>
               <label>{label}</label>
-              <textarea
-                value={val}
-                onChange={(e) => setter(e.target.value)}
-                rows={2}
-                style={{ width: "100%", border: "1px solid #ccc", borderRadius: 3, padding: "6px 8px", fontSize: 12 }}
-              />
+              <textarea value={val} onChange={(e) => setter(e.target.value)} rows={2}
+                style={{ width: "100%", border: "1px solid #ccc", borderRadius: 3, padding: "6px 8px", fontSize: 12 }} />
             </div>
           ))}
 
@@ -454,20 +477,8 @@ function ObservationForm() {
           )}
 
           <div style={{ textAlign: "center" }}>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              style={{
-                background: isSubmitting ? "#7a869a" : NAVY,
-                color: WHITE,
-                border: "none",
-                borderRadius: 4,
-                padding: "13px 52px",
-                fontWeight: "bold",
-                cursor: isSubmitting ? "not-allowed" : "pointer",
-              }}
-            >
+            <button type="button" onClick={handleSubmit} disabled={isSubmitting}
+              style={{ background: isSubmitting ? "#7a869a" : NAVY, color: WHITE, border: "none", borderRadius: 4, padding: "13px 52px", fontWeight: "bold", cursor: isSubmitting ? "not-allowed" : "pointer" }}>
               {isSubmitting ? "Submitting..." : "Submit Observation"}
             </button>
           </div>
