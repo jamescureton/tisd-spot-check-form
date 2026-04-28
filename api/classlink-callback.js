@@ -31,7 +31,7 @@ export default async function handler(req, res) {
     const observer = encodeURIComponent(`${user.FirstName} ${user.LastName}`);
 
     // Try the most common ClassLink field names for Local ID
-    const localId = encodeURIComponent(String(user.UserId || ""));
+    const localId = encodeURIComponent(String(user.SourcedId || ""));
 
     // Redirect to /sso-landing — this page writes to sessionStorage then
     // redirects cleanly to "/" so no sensitive data appears in the URL
