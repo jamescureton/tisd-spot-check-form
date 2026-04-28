@@ -337,16 +337,24 @@ function ObservationForm() {
     setErrors(newErrors);
     if (bad) return;
 
-    const payload = {
-      ...fields,
-      localId,
-      totalPoints,
-      proficiencyLevel: getProficiency(totalPoints).label,
-      praise,
-      polish,
-      question,
-      submittedAt: new Date().toISOString(),
-    };
+// Build individual score values for each rubric item
+const scoreValues: Record<string, number | string> = {};
+ALL_ITEMS.forEach(item => {
+  const selected = scores[item.id];
+  scoreValues[item.id] = selected ? item[selected] : "";
+});
+
+const payload = {
+  ...fields,
+  localId,
+  ...scoreValues,   // spreads p1, p2, p3, i1...i10, c1, c2 with their point values
+  totalPoints,
+  proficiencyLevel: getProficiency(totalPoints).label,
+  praise,
+  polish,
+  question,
+  submittedAt: new Date().toISOString(),
+};
 
     try {
       setIsSubmitting(true);
