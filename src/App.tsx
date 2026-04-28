@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbzun92OtVuFcWlTd2pNDHT8MVlGscRiC39BXIeuM33sN6x0Viwal61WbgzQK4BbF0fZ/exec";
@@ -111,7 +111,9 @@ function ScoreRow(props: { item: RubricItem; value: ScoreLevel; onChange: (id: s
 }
 
 // ==== CONFIRMATION SCREEN ====
-function ConfirmationScreen({ fields, totalPoints, proficiency, onNew }: { fields: FormFields; totalPoints: number; proficiency: { label: string; color: string }; onNew: () => void; }) {
+function ConfirmationScreen({ fields, totalPoints, proficiency, onNew }: {
+  fields: FormFields; totalPoints: number; proficiency: { label: string; color: string }; onNew: () => void;
+}) {
   return (
     <div style={{ fontFamily: "Arial, sans-serif", background: "#f0f2f5", minHeight: "100vh", padding: "20px 0" }}>
       <div style={{ maxWidth: 900, margin: "0 auto", background: WHITE, boxShadow: "0 4px 24px rgba(0,0,0,0.15)", borderRadius: 4, overflow: "hidden" }}>
@@ -133,6 +135,8 @@ function ConfirmationScreen({ fields, totalPoints, proficiency, onNew }: { field
 }
 
 // ==== AUTH CALLBACK ====
+// Receives the code from ClassLink, hands it to the Vercel function,
+// which returns observer data via POST to sessionStorage instead of URL params.
 function AuthCallback() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -154,9 +158,44 @@ function AuthCallback() {
   );
 }
 
+// ==== SSO LANDING ====
+// After the Vercel function resolves user info, it redirects here with a
+// token param. This component reads that token, stores data in sessionStorage,
+// then redirects cleanly to "/" with no sensitive params in the URL.
+function SSOLanding() {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const observer = params.get("observer");
+    const localId = params.get("localId");
+
+    if (observer) {
+      sessionStorage.setItem("sso_observer", decodeURIComponent(observer));
+    }
+    if (localId) {
+      sessionStorage.setItem("sso_localId", decodeURIComponent(localId));
+    }
+
+    // Clean redirect — no params visible in URL
+    window.location.replace("/");
+  }, []);
+
+  return (
+    <div style={{ fontFamily: "Arial, sans-serif", background: "#f0f2f5", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ background: "#fff", borderRadius: 8, padding: "40px 48px", boxShadow: "0 4px 24px rgba(0,0,0,0.15)", textAlign: "center", maxWidth: 400 }}>
+        <div style={{ fontSize: 15, color: "#1B2A4A", fontWeight: "bold", marginBottom: 8 }}>Loading your profile...</div>
+        <div style={{ fontSize: 12, color: "#888" }}>Tyler ISD Core Spot Observation Form</div>
+      </div>
+    </div>
+  );
+}
+
 // ==== MAIN FORM ====
 function ObservationForm() {
   const emptyFields: FormFields = { teacher: "", campus: "", grade: "", observer: "", date: "", time: "", content: "" };
+
+  // useRef stores SSO-derived values so they survive form resets across multiple submissions
+  const ssoData = useRef({ observer: "", localId: "", campus: "", campusLocked: false });
+
   const [fields, setFields] = useState<FormFields>(emptyFields);
   const [localId, setLocalId] = useState("");
   const [scores, setScores] = useState<ScoreMap>({});
@@ -173,24 +212,25 @@ function ObservationForm() {
   const [campusTeacherMap, setCampusTeacherMap] = useState<Record<string, string[]>>({});
   const [loadingData, setLoadingData] = useState(true);
 
-  // On mount: read URL params, fetch observer campus, fetch teacher map
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const observerParam = params.get("observer");
-    const localIdParam = params.get("localId");
+    // Read from sessionStorage — not URL params
+    const observerVal = sessionStorage.getItem("sso_observer") || "";
+    const localIdVal = sessionStorage.getItem("sso_localId") || "";
 
-    if (observerParam) {
-      setFields(prev => ({ ...prev, observer: decodeURIComponent(observerParam) }));
+    if (observerVal) {
+      setFields(prev => ({ ...prev, observer: observerVal }));
       setObserverLocked(true);
+      ssoData.current.observer = observerVal;
     }
-    if (localIdParam) {
-      setLocalId(decodeURIComponent(localIdParam));
+    if (localIdVal) {
+      setLocalId(localIdVal);
+      ssoData.current.localId = localIdVal;
     }
 
     async function loadData() {
       setLoadingData(true);
       try {
-        // Fetch campus_teachers tab to build map
+        // Build campus → teachers map from campus_teachers tab
         const teacherRows = await fetchSheetData("campus_teachers");
         const map: Record<string, string[]> = {};
         teacherRows.slice(1).forEach(row => {
@@ -203,20 +243,20 @@ function ObservationForm() {
         });
         setCampusTeacherMap(map);
 
-        // Fetch observers tab to find campus for this localId
-        if (localIdParam) {
+        // Look up this observer's campus from the observers tab
+        if (localIdVal) {
           const observerRows = await fetchSheetData("observers");
-          const decodedId = decodeURIComponent(localIdParam);
-          // headers: Local ID, Name, Campus
-          const match = observerRows.slice(1).find(row => row[0]?.trim() === decodedId);
+          const match = observerRows.slice(1).find(row => row[0]?.trim() === localIdVal);
           if (match) {
             const campus = match[2]?.trim();
             if (campus && campus.toLowerCase() !== "district") {
               setFields(prev => ({ ...prev, campus }));
               setCampusLocked(true);
               setTeacherList(map[campus] || []);
+              ssoData.current.campus = campus;
+              ssoData.current.campusLocked = true;
             }
-            // If district, leave campus blank and unlocked — user picks from dropdown
+            // If "district", leave campus blank — user selects from dropdown
           }
         }
       } catch (err) {
@@ -229,7 +269,7 @@ function ObservationForm() {
     loadData();
   }, []);
 
-  // Update teacher list whenever campus changes (for district-level observers)
+  // Update teacher list live when campus changes (district-level observers)
   useEffect(() => {
     if (!campusLocked && fields.campus) {
       setTeacherList(campusTeacherMap[fields.campus] || []);
@@ -258,8 +298,21 @@ function ObservationForm() {
     setErrors((prev) => ({ ...prev, [id]: false }));
   }
 
+  // Restores locked SSO fields on reset so 2nd/3rd/4th submissions stay locked
   function handleNew() {
-    setFields(emptyFields);
+    setFields({
+      ...emptyFields,
+      observer: ssoData.current.observer,
+      campus: ssoData.current.campus,
+    });
+    setLocalId(ssoData.current.localId);
+    setObserverLocked(!!ssoData.current.observer);
+    setCampusLocked(ssoData.current.campusLocked);
+    if (ssoData.current.campus && ssoData.current.campusLocked) {
+      setTeacherList(campusTeacherMap[ssoData.current.campus] || []);
+    } else {
+      setTeacherList([]);
+    }
     setScores({});
     setErrors({});
     setAttempted(false);
@@ -286,7 +339,7 @@ function ObservationForm() {
 
     const payload = {
       ...fields,
-      localId,               // hidden field exported to sheet
+      localId,
       totalPoints,
       proficiencyLevel: getProficiency(totalPoints).label,
       praise,
@@ -489,7 +542,8 @@ function ObservationForm() {
 }
 
 export default function App() {
-  const isCallback = window.location.pathname === "/auth/callback";
-  if (isCallback) return <AuthCallback />;
+  const path = window.location.pathname;
+  if (path === "/auth/callback") return <AuthCallback />;
+  if (path === "/sso-landing") return <SSOLanding />;
   return <ObservationForm />;
 }

@@ -4,6 +4,7 @@ export default async function handler(req, res) {
   if (!code) return res.redirect("/?error=no_code");
 
   try {
+    // Exchange code for access token
     const tokenRes = await fetch("https://launchpad.classlink.com/oauth2/v2/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -18,6 +19,7 @@ export default async function handler(req, res) {
     const tokenData = await tokenRes.json();
     const access_token = tokenData.access_token;
 
+    // Get user info from ClassLink
     const userRes = await fetch("https://nodeapi.classlink.com/v2/my/info", {
       headers: { Authorization: `Bearer ${access_token}` }
     });
@@ -33,7 +35,9 @@ export default async function handler(req, res) {
       user.sourcedId || user.UserId || user.localId || user.StudentId || ""
     );
 
-    res.redirect(`/?observer=${observer}&localId=${localId}`);
+    // Redirect to /sso-landing — this page writes to sessionStorage then
+    // redirects cleanly to "/" so no sensitive data appears in the URL
+    res.redirect(`/sso-landing?observer=${observer}&localId=${localId}`);
 
   } catch (err) {
     console.error("ClassLink callback error:", err);
