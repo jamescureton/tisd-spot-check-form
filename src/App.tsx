@@ -392,6 +392,16 @@ const payload = {
 
   const campusOptions = Object.keys(campusTeacherMap).sort();
 
+  const PROFICIENCY_BANDS = [
+    { range: "0 - 5.5",   label: "UNSAT" },
+    { range: "6 - 7.5",   label: "PROG I" },
+    { range: "8 - 10",    label: "PROG II" },
+    { range: "10.5 - 14", label: "PROF I" },
+    { range: "14.5 - 16.5", label: "PROF II" },
+    { range: "17 - 17.5", label: "EXEMP I" },
+    { range: "18",        label: "EXEMP II" },
+  ];
+
   return (
     <div style={{ fontFamily: "Arial, sans-serif", background: "#f0f2f5", minHeight: "100vh", padding: "20px 0" }}>
       <div style={{ maxWidth: 900, margin: "0 auto", background: WHITE, boxShadow: "0 4px 24px rgba(0,0,0,0.15)", borderRadius: 4, overflow: "hidden" }}>
@@ -503,7 +513,7 @@ const payload = {
           </div>
 
           {/* Rubric table */}
-          <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 20 }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 0 }}>
             <tbody>
               <tr style={{ background: "#e8eef5" }}>
                 <td style={{ padding: "5px 10px", fontSize: 11, fontWeight: "bold", color: "#333" }}>
@@ -519,8 +529,75 @@ const payload = {
               {INSTRUCTION.map((item) => <ScoreRow key={item.id} item={item} value={scores[item.id] || null} onChange={handleScoreChange} hasError={!!errors[item.id]} />)}
               <tr><td colSpan={4} style={{ background: NAVY, color: WHITE, textAlign: "center", padding: 8 }}>CLASSROOM CULTURE</td></tr>
               {CULTURE.map((item) => <ScoreRow key={item.id} item={item} value={scores[item.id] || null} onChange={handleScoreChange} hasError={!!errors[item.id]} />)}
+
+              {/* Total Points row */}
+              <tr style={{ borderTop: "2px solid #ccc" }}>
+                <td colSpan={3} style={{ padding: "8px 10px", fontSize: 13, fontWeight: "bold", textAlign: "right" }}>
+                  Total Points:
+                </td>
+                <td style={{ textAlign: "center", padding: "8px 4px" }}>
+                  <div style={{
+                    background: answeredCount > 0 ? GOLD : "#f0f0f0",
+                    color: answeredCount > 0 ? "#000" : "#999",
+                    fontWeight: "bold",
+                    fontSize: 14,
+                    borderRadius: 3,
+                    padding: "4px 8px",
+                    minWidth: 36,
+                    display: "inline-block",
+                  }}>
+                    {answeredCount > 0 ? totalPoints : "—"}
+                  </div>
+                </td>
+              </tr>
             </tbody>
           </table>
+
+          {/* Proficiency Level table */}
+          <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 4, border: "1px solid #ccc" }}>
+            <tbody>
+              <tr>
+                <td colSpan={7} style={{ background: GOLD, color: "#000", textAlign: "center", padding: "6px 10px", fontWeight: "bold", fontSize: 13 }}>
+                  Proficiency Level
+                </td>
+              </tr>
+              <tr>
+                {PROFICIENCY_BANDS.map((band) => (
+                  <td key={band.label} style={{
+                    textAlign: "center",
+                    padding: "4px 2px",
+                    fontSize: 11,
+                    border: "1px solid #ccc",
+                    background: answeredCount > 0 && proficiency.label === band.label ? proficiency.color : "transparent",
+                    color: answeredCount > 0 && proficiency.label === band.label ? WHITE : "#333",
+                    fontWeight: answeredCount > 0 && proficiency.label === band.label ? "bold" : "normal",
+                  }}>
+                    {band.range}
+                  </td>
+                ))}
+              </tr>
+              <tr>
+                {PROFICIENCY_BANDS.map((band) => (
+                  <td key={band.label} style={{
+                    textAlign: "center",
+                    padding: "4px 2px",
+                    fontSize: 11,
+                    border: "1px solid #ccc",
+                    background: answeredCount > 0 && proficiency.label === band.label ? proficiency.color : "transparent",
+                    color: answeredCount > 0 && proficiency.label === band.label ? WHITE : "#333",
+                    fontWeight: answeredCount > 0 && proficiency.label === band.label ? "bold" : "normal",
+                  }}>
+                    {band.label}
+                  </td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
+
+          {/* Rounding note */}
+          <div style={{ textAlign: "center", color: RED, fontSize: 12, fontStyle: "italic", marginBottom: 20, marginTop: 2 }}>
+            Note: Spot scores are NOT rounded
+          </div>
 
           {/* Praise / Polish / Question */}
           {([["Praise", praise, setPraise], ["Polish", polish, setPolish], ["Question", question, setQuestion]] as [string, string, React.Dispatch<React.SetStateAction<string>>][]).map(([label, val, setter]) => (
