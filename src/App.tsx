@@ -17,6 +17,7 @@ type FormFields = { teacher: string; campus: string; grade: string; observer: st
 type ScoreMap = { [key: string]: ScoreLevel; };
 type ErrorMap = { [key: string]: boolean; };
 type RubricItem = { id: string; bold: string; text: string; italic?: string; u: number; p: number; m: number; };
+type TeacherInfo = { name: string; email: string; localId: string };
 
 async function fetchSheetData(sheetName: string): Promise<string[][]> {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
@@ -167,12 +168,16 @@ function SSOLanding() {
     const params = new URLSearchParams(window.location.search);
     const observer = params.get("observer");
     const localId = params.get("localId");
+    const email = params.get("email");
 
     if (observer) {
       sessionStorage.setItem("sso_observer", decodeURIComponent(observer));
     }
     if (localId) {
       sessionStorage.setItem("sso_localId", decodeURIComponent(localId));
+    }
+    if (email) {
+      sessionStorage.setItem("sso_observerEmail", decodeURIComponent(email));
     }
 
     // Clean redirect — no params visible in URL
@@ -194,10 +199,11 @@ function ObservationForm() {
   const emptyFields: FormFields = { teacher: "", campus: "", grade: "", observer: "", date: "", time: "", content: "" };
 
   // useRef stores SSO-derived values so they survive form resets across multiple submissions
-  const ssoData = useRef({ observer: "", localId: "", campus: "", campusLocked: false });
+  const ssoData = useRef({ observer: "", localId: "", observerEmail: "", campus: "", campusLocked: false });
 
   const [fields, setFields] = useState<FormFields>(emptyFields);
   const [localId, setLocalId] = useState("");
+  const [observerEmail, setObserverEmail] = useState("");
   const [scores, setScores] = useState<ScoreMap>({});
   const [errors, setErrors] = useState<ErrorMap>({});
   const [attempted, setAttempted] = useState(false);
@@ -208,14 +214,15 @@ function ObservationForm() {
   const [question, setQuestion] = useState("");
   const [observerLocked, setObserverLocked] = useState(false);
   const [campusLocked, setCampusLocked] = useState(false);
-  const [teacherList, setTeacherList] = useState<string[]>([]);
-  const [campusTeacherMap, setCampusTeacherMap] = useState<Record<string, string[]>>({});
+  const [teacherList, setTeacherList] = useState<TeacherInfo[]>([]);
+  const [campusTeacherMap, setCampusTeacherMap] = useState<Record<string, TeacherInfo[]>>({});
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
     // Read from sessionStorage — not URL params
     const observerVal = sessionStorage.getItem("sso_observer") || "";
     const localIdVal = sessionStorage.getItem("sso_localId") || "";
+    const observerEmailVal = sessionStorage.getItem("sso_observerEmail") || "";
 
     if (observerVal) {
       setFields(prev => ({ ...prev, observer: observerVal }));
@@ -226,19 +233,26 @@ function ObservationForm() {
       setLocalId(localIdVal);
       ssoData.current.localId = localIdVal;
     }
+    if (observerEmailVal) {
+      setObserverEmail(observerEmailVal);
+      ssoData.current.observerEmail = observerEmailVal;
+    }
 
     async function loadData() {
       setLoadingData(true);
       try {
         // Build campus → teachers map from campus_teachers tab
+        // Expected columns: Campus | Teacher | Email | LocalID
         const teacherRows = await fetchSheetData("campus_teachers");
-        const map: Record<string, string[]> = {};
+        const map: Record<string, TeacherInfo[]> = {};
         teacherRows.slice(1).forEach(row => {
           const campus = row[0]?.trim();
           const teacher = row[1]?.trim();
+          const email = row[2]?.trim() || "";
+          const teacherLocalId = row[3]?.trim() || "";
           if (campus && teacher) {
             if (!map[campus]) map[campus] = [];
-            map[campus].push(teacher);
+            map[campus].push({ name: teacher, email, localId: teacherLocalId });
           }
         });
         setCampusTeacherMap(map);
@@ -306,6 +320,7 @@ function ObservationForm() {
       campus: ssoData.current.campus,
     });
     setLocalId(ssoData.current.localId);
+    setObserverEmail(ssoData.current.observerEmail);
     setObserverLocked(!!ssoData.current.observer);
     setCampusLocked(ssoData.current.campusLocked);
     if (ssoData.current.campus && ssoData.current.campusLocked) {
@@ -344,9 +359,15 @@ ALL_ITEMS.forEach(item => {
   scoreValues[item.id] = selected ? item[selected] : "";
 });
 
+// Look up the selected teacher's email/ID from the campus_teachers tab
+const selectedTeacherInfo = (campusTeacherMap[fields.campus] || []).find(t => t.name === fields.teacher);
+
 const payload = {
   ...fields,
   localId,
+  observerEmail,
+  teacherEmail: selectedTeacherInfo?.email || "",
+  teacherLocalId: selectedTeacherInfo?.localId || "",
   ...scoreValues,   // spreads p1, p2, p3, i1...i10, c1, c2 with their point values
   totalPoints,
   proficiencyLevel: getProficiency(totalPoints).label,
@@ -457,7 +478,7 @@ const payload = {
                     style={inputStyle("teacher")}
                   >
                     <option value="">Select teacher...</option>
-                    {teacherList.map(t => <option key={t}>{t}</option>)}
+                    {teacherList.map(t => <option key={t.name}>{t.name}</option>)}
                   </select>
                 ) : (
                   <input
