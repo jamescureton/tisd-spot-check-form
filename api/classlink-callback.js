@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     });
     const user = await userRes.json();
 
-    // Log all fields so we can confirm the Local ID field name
+    // Log all fields so we can confirm the exact Email field name for this district
     console.log("ClassLink user fields:", JSON.stringify(user));
 
     const observer = encodeURIComponent(`${user.FirstName} ${user.LastName}`);
@@ -33,9 +33,21 @@ export default async function handler(req, res) {
     // Try the most common ClassLink field names for Local ID
     const localId = encodeURIComponent(String(user.SourcedId || ""));
 
+    // Try the most common ClassLink field names for email — falls back through
+    // alternates in case this district's SIS populates a different field.
+    // Check the Vercel function logs (the console.log above) to see which
+    // field actually has the value, then adjust this list if needed.
+    const rawEmail =
+      user.Email ||
+      user.DistrictEmail ||
+      user.LoginId ||
+      user.Username ||
+      "";
+    const email = encodeURIComponent(rawEmail);
+
     // Redirect to /sso-landing — this page writes to sessionStorage then
     // redirects cleanly to "/" so no sensitive data appears in the URL
-    res.redirect(`/sso-landing?observer=${observer}&localId=${localId}`);
+    res.redirect(`/sso-landing?observer=${observer}&localId=${localId}&email=${email}`);
 
   } catch (err) {
     console.error("ClassLink callback error:", err);
