@@ -62,6 +62,9 @@ const CULTURE: RubricItem[] = [
 const ALL_ITEMS = [...PLANNING, ...INSTRUCTION, ...CULTURE];
 const REQUIRED_FIELDS: FieldKey[] = ["teacher", "campus", "grade", "observer", "date", "content"];
 
+// Campuses exempted from required-field/rubric validation on submit
+const OPTIONAL_VALIDATION_CAMPUSES = ["rice elementary school"];
+
 function getProficiency(total: number) {
   if (total <= 5.5)  return { label: "UNSAT",   color: "#C0272D" };
   if (total <= 7.5)  return { label: "PROG I",  color: "#D05020" };
@@ -341,41 +344,49 @@ function ObservationForm() {
 
   async function handleSubmit() {
     setAttempted(true);
+
+    // Rice Elementary School is exempt from required-field/rubric validation
+    const isExemptCampus = OPTIONAL_VALIDATION_CAMPUSES.includes(fields.campus.trim().toLowerCase());
+
     const newErrors: ErrorMap = {};
     let bad = false;
-    REQUIRED_FIELDS.forEach((key) => {
-      if (!fields[key].trim()) { newErrors[key] = true; bad = true; }
-    });
-    ALL_ITEMS.forEach((item) => {
-      if (!scores[item.id]) { newErrors[item.id] = true; bad = true; }
-    });
+
+    if (!isExemptCampus) {
+      REQUIRED_FIELDS.forEach((key) => {
+        if (!fields[key].trim()) { newErrors[key] = true; bad = true; }
+      });
+      ALL_ITEMS.forEach((item) => {
+        if (!scores[item.id]) { newErrors[item.id] = true; bad = true; }
+      });
+    }
+
     setErrors(newErrors);
     if (bad) return;
 
-// Build individual score values for each rubric item
-const scoreValues: Record<string, number | string> = {};
-ALL_ITEMS.forEach(item => {
-  const selected = scores[item.id];
-  scoreValues[item.id] = selected ? item[selected] : "";
-});
+    // Build individual score values for each rubric item
+    const scoreValues: Record<string, number | string> = {};
+    ALL_ITEMS.forEach(item => {
+      const selected = scores[item.id];
+      scoreValues[item.id] = selected ? item[selected] : "";
+    });
 
-// Look up the selected teacher's email/ID from the campus_teachers tab
-const selectedTeacherInfo = (campusTeacherMap[fields.campus] || []).find(t => t.name === fields.teacher);
+    // Look up the selected teacher's email/ID from the campus_teachers tab
+    const selectedTeacherInfo = (campusTeacherMap[fields.campus] || []).find(t => t.name === fields.teacher);
 
-const payload = {
-  ...fields,
-  localId,
-  observerEmail,
-  teacherEmail: selectedTeacherInfo?.email || "",
-  teacherLocalId: selectedTeacherInfo?.localId || "",
-  ...scoreValues,   // spreads p1, p2, p3, i1...i10, c1, c2 with their point values
-  totalPoints,
-  proficiencyLevel: getProficiency(totalPoints).label,
-  praise,
-  polish,
-  question,
-  submittedAt: new Date().toISOString(),
-};
+    const payload = {
+      ...fields,
+      localId,
+      observerEmail,
+      teacherEmail: selectedTeacherInfo?.email || "",
+      teacherLocalId: selectedTeacherInfo?.localId || "",
+      ...scoreValues,   // spreads p1, p2, p3, i1...i10, c1, c2 with their point values
+      totalPoints,
+      proficiencyLevel: getProficiency(totalPoints).label,
+      praise,
+      polish,
+      question,
+      submittedAt: new Date().toISOString(),
+    };
 
     try {
       setIsSubmitting(true);
@@ -404,6 +415,8 @@ const payload = {
       fontSize: 12,
       width: "100%",
       background: errors[key] ? "#fff5f5" : WHITE,
+      color: "#000000",
+      colorScheme: "light" as const,
     };
   }
 
