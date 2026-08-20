@@ -543,6 +543,11 @@ function ObservationForm() {
       ALL_ITEMS.forEach((item) => {
         if (!scores[item.id]) { newErrors[item.id] = true; bad = true; }
       });
+      // Praise / Polish / Question are required too
+      ([["praise", praise], ["polish", polish], ["question", question]] as [string, string][])
+        .forEach(([key, val]) => {
+          if (!val.trim()) { newErrors[key] = true; bad = true; }
+        });
     }
 
     setErrors(newErrors);
@@ -844,11 +849,30 @@ function ObservationForm() {
           </div>
 
           {/* Praise / Polish / Question */}
-          {([["Praise", praise, setPraise], ["Polish", polish, setPolish], ["Question", question, setQuestion]] as [string, string, React.Dispatch<React.SetStateAction<string>>][]).map(([label, val, setter]) => (
-            <div key={label} style={{ marginBottom: 12 }}>
-              <label>{label}</label>
-              <textarea value={val} onChange={(e) => setter(e.target.value)} rows={2}
-                style={{ width: "100%", border: "1px solid #ccc", borderRadius: 3, padding: "6px 8px", fontSize: 12 }} />
+          {([
+            ["praise", "Praise", praise, setPraise],
+            ["polish", "Polish", polish, setPolish],
+            ["question", "Question", question, setQuestion],
+          ] as [string, string, string, React.Dispatch<React.SetStateAction<string>>][]).map(([key, label, val, setter]) => (
+            <div key={key} style={{ marginBottom: 12 }}>
+              <label style={{ fontWeight: "bold", fontSize: 12 }}>{label} *</label>
+              <textarea
+                value={val}
+                rows={2}
+                onChange={(e) => {
+                  setter(e.target.value);
+                  setErrors(prev => ({ ...prev, [key]: false }));
+                }}
+                style={{
+                  width: "100%",
+                  border: `1px solid ${errors[key] ? RED : "#ccc"}`,
+                  background: errors[key] ? "#fff5f5" : WHITE,
+                  borderRadius: 3,
+                  padding: "6px 8px",
+                  fontSize: 12,
+                  color: "#000000",
+                }}
+              />
             </div>
           ))}
 
