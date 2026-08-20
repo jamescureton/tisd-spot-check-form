@@ -1,6 +1,5 @@
 export default async function handler(req, res) {
   const { code } = req.query;
-
   if (!code) return res.redirect("/?error=no_code");
 
   try {
@@ -25,18 +24,13 @@ export default async function handler(req, res) {
     });
     const user = await userRes.json();
 
-    // Log all fields so we can confirm the exact Email field name for this district
+    // Log all fields so we can confirm exact field names for this district.
+    // Check Vercel -> your project -> Logs after signing in once.
     console.log("ClassLink user fields:", JSON.stringify(user));
 
-    const observer = encodeURIComponent(`${user.FirstName} ${user.LastName}`);
-
-    // Try the most common ClassLink field names for Local ID
+    const observer = encodeURIComponent(`${user.FirstName || ""} ${user.LastName || ""}`.trim());
     const localId = encodeURIComponent(String(user.SourcedId || ""));
 
-    // Try the most common ClassLink field names for email — falls back through
-    // alternates in case this district's SIS populates a different field.
-    // Check the Vercel function logs (the console.log above) to see which
-    // field actually has the value, then adjust this list if needed.
     const rawEmail =
       user.Email ||
       user.DistrictEmail ||
@@ -45,10 +39,46 @@ export default async function handler(req, res) {
       "";
     const email = encodeURIComponent(rawEmail);
 
-    // Redirect to /sso-landing — this page writes to sessionStorage then
-    // redirects cleanly to "/" so no sensitive data appears in the URL
-    res.redirect(`/sso-landing?observer=${observer}&localId=${localId}&email=${email}`);
+    // ---- CAMPUS ----
+    // /v2/my/info returns "Building" (the campus NAME) and "BuildingId" (a small
+    // internal ClassLink number, NOT the 9-digit CDC). The form matches on the
+    // name against the Campus column in the campus_teachers tab.
+    const campusName = String(user.Building || "").trim();
 
+    // If this district's payload happens to carry real org/CDC values, forward
+    // them too — the form accepts either and prefers CDCs when present.
+    // Normalizes an array of objects, an array of strings, or a plain string
+    // into a simple comma-separated list.
+    const rawOrgs =
+      user.orgSourcedIds ||
+      user.OrgSourcedIds ||
+      user.orgs ||
+      user.Orgs ||
+      user.OrgId ||
+      "";
+
+    let orgs = "";
+    if (Array.isArray(rawOrgs)) {
+      orgs = rawOrgs
+        .map(o => (typeof o === "string" || typeof o === "number" ? String(o) : (o?.sourcedId || o?.SourcedId || o?.id || "")))
+        .filter(Boolean)
+        .join(",");
+    } else if (rawOrgs) {
+      orgs = String(rawOrgs).trim();
+    }
+
+    console.log("ClassLink campus resolution:", { campusName, buildingId: user.BuildingId, orgs });
+
+    // Redirect to /sso-landing — that page writes to sessionStorage then
+    // redirects cleanly to "/" so nothing sensitive stays in the URL.
+    const params = new URLSearchParams();
+    params.set("observer", decodeURIComponent(observer));
+    params.set("localId", decodeURIComponent(localId));
+    params.set("email", decodeURIComponent(email));
+    if (campusName) params.set("campus", campusName);
+    if (orgs) params.set("orgs", orgs);
+
+    res.redirect(`/sso-landing?${params.toString()}`);
   } catch (err) {
     console.error("ClassLink callback error:", err);
     res.redirect("/?error=auth_failed");

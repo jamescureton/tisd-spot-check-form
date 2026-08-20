@@ -16,7 +16,8 @@ const SS = {
   observer: "sso_observer",
   localId: "sso_localId",
   observerEmail: "sso_observerEmail",
-  orgs: "sso_orgs",                 // NEW: 9-digit CDCs from ClassLink orgSourcedIds
+  orgs: "sso_orgs",                 // 9-digit CDCs, if ClassLink supplies any
+  campusNames: "sso_campusNames",   // campus NAME(s) from ClassLink "Building"
   crossCampus: "cc_crossCampus",    // NEW: persists the unlock for the session
   lastCampus: "cc_lastCampus",      // NEW: remembers the cross-campus choice
 };
@@ -217,11 +218,14 @@ function SSOLanding() {
     // NEW: ClassLink orgSourcedIds (9-digit CDCs). Accepts a JSON array or a
     // comma/space/semicolon separated list, whichever the callback sends.
     const orgs = params.get("orgs") || params.get("orgSourcedIds");
+    // ClassLink's /v2/my/info returns the campus NAME in "Building"
+    const campus = params.get("campus");
 
     if (observer) sessionStorage.setItem(SS.observer, decodeURIComponent(observer));
     if (localId) sessionStorage.setItem(SS.localId, decodeURIComponent(localId));
     if (email) sessionStorage.setItem(SS.observerEmail, decodeURIComponent(email));
     if (orgs) sessionStorage.setItem(SS.orgs, decodeURIComponent(orgs));
+    if (campus) sessionStorage.setItem(SS.campusNames, decodeURIComponent(campus));
 
     // A fresh sign-in starts with the cross-campus unlock OFF
     sessionStorage.removeItem(SS.crossCampus);
@@ -266,6 +270,17 @@ function readOrgCdcs(): string[] {
   return Array.from(new Set(list.map(s => String(s).trim()).filter(Boolean)));
 }
 
+function readCampusNames(): string[] {
+  const raw = (sessionStorage.getItem(SS.campusNames) || "").trim();
+  if (!raw) return [];
+  return Array.from(new Set(raw.split(/[,;|]+/).map(s => s.trim()).filter(Boolean)));
+}
+
+// "Rice Elementary School" / "RICE ELEM. SCHOOL" -> "rice elementary school"
+function normCampus(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
 // ==== MAIN FORM ====
 function ObservationForm() {
   const emptyFields: FormFields = { teacher: "", campus: "", grade: "", observer: "", date: "", time: "", content: "" };
@@ -298,8 +313,11 @@ function ObservationForm() {
     // forwards orgs. Visit  /?orgs=212905117  or  /?orgs=212905117,212905119
     // Safe to leave in: the cross-campus checkbox already grants any campus,
     // so this isn't a security boundary. Delete these 3 lines if you'd rather.
-    const orgsParam = new URLSearchParams(window.location.search).get("orgs");
+    const qs = new URLSearchParams(window.location.search);
+    const orgsParam = qs.get("orgs");
+    const campusParam = qs.get("campus");
     if (orgsParam) sessionStorage.setItem(SS.orgs, orgsParam);
+    if (campusParam) sessionStorage.setItem(SS.campusNames, campusParam);
 
     const observerVal = sessionStorage.getItem(SS.observer) || "";
     const localIdVal = sessionStorage.getItem(SS.localId) || "";
@@ -362,9 +380,29 @@ function ObservationForm() {
         // orgSourcedIds come back as 9-digit CDCs. Anything that isn't a known
         // campus CDC (e.g. the district-level org) simply drops out.
         const orgCdcs = readOrgCdcs();
-        let allowed = Array.from(
-          new Set(orgCdcs.map(c => cdcToCampus[c]).filter(Boolean))
-        ).sort();
+        const fromCdc = orgCdcs.map(c => cdcToCampus[c]).filter(Boolean);
+
+        // ClassLink's /v2/my/info gives a campus NAME ("Building"), not a CDC,
+        // so match on the name against the Campus column. Normalized compare
+        // first, then a tolerant prefix match for "Rice Elementary" vs
+        // "Rice Elementary School".
+        const normToCampus: Record<string, string> = {};
+        Object.keys(map).forEach(c => { normToCampus[normCampus(c)] = c; });
+
+        const fromNames = readCampusNames().map(n => {
+          const k = normCampus(n);
+          if (!k) return "";
+          if (normToCampus[k]) return normToCampus[k];
+          const near = Object.keys(normToCampus).find(x => x.startsWith(k) || k.startsWith(x));
+          if (near) {
+            console.warn(`Campus "${n}" matched loosely to "${normToCampus[near]}" — consider aligning the names.`);
+            return normToCampus[near];
+          }
+          console.warn(`ClassLink campus "${n}" has no match in campus_teachers.`);
+          return "";
+        }).filter(Boolean);
+
+        let allowed = Array.from(new Set([...fromCdc, ...fromNames])).sort();
 
         // Fallback: the manual `observers` tab, for anyone ClassLink doesn't
         // report a campus for. "District" means no restriction.
